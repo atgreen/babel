@@ -1,0 +1,7 @@
+(require :asdf)
+(asdf:load-system :babel-streams)
+(assert (equalp #(65 206 187)
+ (babel-streams:with-output-to-sequence (out :external-format :utf-8)
+  (write-char #\A out)
+  (write-char (code-char #x03bb) out))))
+(format t "Babel streams encoding passed.~%")

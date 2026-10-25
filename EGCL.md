@@ -15,5 +15,9 @@ Put this directory first in ASDF's source registry to select this fork.
 The committed smoke test contains semantic assertions and prints
 `EGCL babel smoke passed.` after all assertions succeed.
 Validated on EGCL 0.0.10 (b94618ece), with a 2 GiB process memory cap.
-Focused public API smoke coverage only; full upstream suite not run. babel-streams not validated by this smoke test.
+Focused public API smoke coverage only; full upstream suite not run.
 Tracking: `bliss-yhct8.1`.
+
+`egcl --no-init --load egcl-streams-smoke.lisp` also validates babel-streams:
+writing ASCII and Greek characters through an in-memory Gray stream produces
+the expected UTF-8 octets. Use the EGCL trivial-gray-streams fork for this system.
