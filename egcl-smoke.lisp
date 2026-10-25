@@ -1,0 +1,7 @@
+(require :asdf)
+(asdf:load-system "babel")
+(let* ((text (coerce (list #\A (code-char #x03bb) (code-char #x1f600)) 'string))
+       (bytes (babel:string-to-octets text :encoding :utf-8)))
+  (assert (equalp bytes #(65 206 187 240 159 152 128)))
+  (assert (string= text (babel:octets-to-string bytes :encoding :utf-8))))
+(format t "EGCL babel smoke passed.~%")
