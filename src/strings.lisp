@@ -167,8 +167,26 @@ shouldn't attempt to modify V."
        (let ((,e (+ ,end ,offset))
              (,s (+ ,start ,offset)))
          ,@body)))
+  ;; Keep EGCL's portable array normalization without allocating a one-shot
+  ;; captured callback for every conversion. BODY remains one lexical body,
+  ;; preserving declarations and its complete multiple-value result.
+  #+egcl
+  (with-unique-names (input copy-p input-start input-end data offset)
+    `(let* ((,input ,vector)
+            (,copy-p (adjustable-array-p ,input))
+            (,input-start ,start)
+            (,input-end ,end))
+       (multiple-value-bind (,v ,s ,e)
+           (if ,copy-p
+               (values (replace (make-array (- ,input-end ,input-start)
+                                            :element-type (array-element-type ,input))
+                                ,input :start2 ,input-start :end2 ,input-end)
+                       0 (- ,input-end ,input-start))
+               (multiple-value-bind (,data ,offset) (array-data-and-offset ,input)
+                 (values ,data (+ ,offset ,input-start) (+ ,offset ,input-end))))
+         ,@body)))
   ;; slow, copying implementation
-  #-(or sbcl cmu scl openmcl allegro)
+  #-(or egcl sbcl cmu scl openmcl allegro)
   (once-only (vector)
     `(funcall (if (adjustable-array-p ,vector)
                   #'call-with-array-data/copy

@@ -21,3 +21,11 @@ Tracking: `bliss-yhct8.1`.
 `egcl --no-init --load egcl-streams-smoke.lisp` also validates babel-streams:
 writing ASCII and Greek characters through an in-memory Gray stream produces
 the expected UTF-8 octets. Use the EGCL trivial-gray-streams fork for this system.
+
+`egcl-array-bindings-smoke.lisp` checks EGCL's inline `WITH-SIMPLE-VECTOR`
+bindings, including displacement chains, nonzero bounds, fill pointers,
+adjustable-input copying, mutation aliases, declarations, evaluation order,
+and zero/multiple values. The adjustable branch retains the portable helper's
+copy-only behavior: changes to its temporary are not copied back. Other Lisp
+implementations retain their existing expansion. This check also runs on SBCL
+for the common semantics, with its documented direct-storage mutation behavior.
