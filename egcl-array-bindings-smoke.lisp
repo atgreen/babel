@@ -73,4 +73,27 @@
         (declare (ignore data lo hi))
         (push :body order) 42)))
     (assert (equal (reverse order) '(:vector :start :end :body)))))
+;; Input names may coincide with output names; final bindings must capture
+;; all normalized values before the caller's declarations take effect.
+(let ((data (make-array 4 :initial-contents '(40 41 42 43)))
+      (lo 1) (hi 3))
+  (assert (equal
+    (multiple-value-list
+      (babel::with-simple-vector ((data data) (lo lo) (hi hi))
+        (declare (type fixnum lo hi))
+        (values (aref data lo) (aref data (1- hi)))))
+    '(41 42))))
+(defvar *array-binding-smoke-data* :outside)
+(let ((input (make-array 1 :initial-element 9)))
+  (assert (= 9
+    (babel::with-simple-vector ((*array-binding-smoke-data* input) (lo 0) (hi 1))
+      (declare (special *array-binding-smoke-data*) (ignore hi))
+      (aref *array-binding-smoke-data* lo))))
+  (assert (eq *array-binding-smoke-data* :outside)))
+#+egcl
+(let ((input (make-array 3 :initial-contents '(81 82 83) :adjustable t)))
+  (babel::with-simple-vector ((data input) (lo 1) (hi 3))
+    (egcl-ext:gc)
+    (assert (= (aref data lo) 82))
+    (assert (= (aref data (1- hi)) 83))))
 (format t "BABEL-ARRAY-BINDINGS-OK~%")

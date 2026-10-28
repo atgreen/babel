@@ -171,19 +171,25 @@ shouldn't attempt to modify V."
   ;; captured callback for every conversion. BODY remains one lexical body,
   ;; preserving declarations and its complete multiple-value result.
   #+egcl
-  (with-unique-names (input copy-p input-start input-end data offset)
+  (with-unique-names (input copy-p input-start input-end data lo hi base offset)
     `(let* ((,input ,vector)
             (,copy-p (adjustable-array-p ,input))
             (,input-start ,start)
-            (,input-end ,end))
-       (multiple-value-bind (,v ,s ,e)
-           (if ,copy-p
-               (values (replace (make-array (- ,input-end ,input-start)
-                                            :element-type (array-element-type ,input))
-                                ,input :start2 ,input-start :end2 ,input-end)
-                       0 (- ,input-end ,input-start))
-               (multiple-value-bind (,data ,offset) (array-data-and-offset ,input)
-                 (values ,data (+ ,offset ,input-start) (+ ,offset ,input-end))))
+            (,input-end ,end)
+            (,data ,input)
+            (,lo ,input-start)
+            (,hi ,input-end))
+       (if ,copy-p
+           (setq ,data (replace (make-array (- ,input-end ,input-start)
+                                           :element-type (array-element-type ,input))
+                               ,input :start2 ,input-start :end2 ,input-end)
+                 ,lo 0
+                 ,hi (- ,input-end ,input-start))
+           (multiple-value-bind (,base ,offset) (array-data-and-offset ,input)
+             (setq ,data ,base
+                   ,lo (+ ,offset ,input-start)
+                   ,hi (+ ,offset ,input-end))))
+       (let ((,v ,data) (,s ,lo) (,e ,hi))
          ,@body)))
   ;; slow, copying implementation
   #-(or egcl sbcl cmu scl openmcl allegro)
